@@ -19,4 +19,47 @@
               Watcher នឹង call ហៅ Worker អោយធ្វើការអីមួយដែលយើងចង់បាន 
               ដូចជា request api ជាដើម
 
+  + parallel vs. concurrent vs. async. vs. simultaneous
+    - concurrent: 2 queues, 1 coffee machines
+      យើងអាចចាប់ផ្ដើម task ថ្មីមួយទៀត ដោយមិនចាំបាច់រង់ចាំ រឺ task ចាស់មិនទាន់ដំណើរការចប់ក៏ដោយ
+
+    - parallel: 2 queues , 2 coffee machines
+
+  - fork( process នៅតែភ្ជាប់ទៅនឹង process មេ ) vs. 
+  - spawn( process ត្រូវបានផ្ដាច់ចេញពី process មេ )
+
+  ប្រសិនបើយើងមាន saga watcher ដែល watch action ផ្សេងគ្នាច្រើន 
+  យើងអាចបង្កើត multiple watchers ដែលដំណើរការនៅ background
+
+  ឧទាហរណ៏៖
+  ```
+    // FETCH_USERS
+    function* fetchUsers(action) { ... }
+
+    // CREATE_USER
+    function* createUser(action) { ... }
+
+    // use them in parallel
+    export default function* rootSaga() {
+      yield takeEvery('FETCH_USERS', fetchUsers)
+      yield takeEvery('CREATE_USER', createUser)
+    }
+  ```
+
+  Effect : គឺជា instruction ដែល middleware ប្រើដើម្បីដឹងថា
+            គួរធ្វើការអីមួយ
+
+  Saga អាច yield Effect បានច្រើនទម្រង់, តែទម្រង់ដែលយើង
+        ឃើញញឹកញាប់ជាងគេ គឺ yield a Promise.
+
+  call(fn, ...args) 
+  alias `apply()` សាកសមសំរាប់ function ដែល return លទ្ធផលជា promise
+
+  cps(..args, (err, result) => {}) : style node
+  សាកសមសំរាប់ i/o
+  ```
+  const content = yield cps(readFile, '/path/to/file')
+  ```
   
+
+
