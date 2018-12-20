@@ -61,34 +61,103 @@
   const content = yield cps(readFile, '/path/to/file')
   ```
 
-យើងអាចបោះ dispatch ទៅអោយ generator function បាន
-```
-function* fetchProducts(dispatch) {
-  const products = yield call(Api.fetch, '/products')
-  dispatch({ type: 'PRODUCTS_RECEIVED', products })
-}
-```
-dipatch ពិបាកពេលត្រូវការ test ព្រោះត្រូវ mock
-ដូចនេះ saga មាន put Effect សំរាប់បញ្ហានេះ
-
-```
-function* fetchProducts() {
-  const products = yield call(Api.fetch, '/products')
-  // create and yield a dispatch Effect
-  yield put({ type: 'PRODUCTS_RECEIVED', products })
-}
-```
-
-### Error handling
-
-function* ...() {
-  try{
-    ...
-  } catch(error) {
-    ...
+  យើងអាចបោះ dispatch ទៅអោយ generator function បាន
+  ```
+  function* fetchProducts(dispatch) {
+    const products = yield call(Api.fetch, '/products')
+    dispatch({ type: 'PRODUCTS_RECEIVED', products })
   }
-}
+  ```
+  dipatch ពិបាកពេលត្រូវការ test ព្រោះត្រូវ mock
+  ដូចនេះ saga មាន put Effect សំរាប់បញ្ហានេះ
 
-**Note Desired control flow ដោយគ្រាន់តែ Effects ផ្គុំ និង តំរៀបលំដាប់
+  ```
+  function* fetchProducts() {
+    const products = yield call(Api.fetch, '/products')
+    // create and yield a dispatch Effect
+    yield put({ type: 'PRODUCTS_RECEIVED', products })
+  }
+  ```
 
-Advance: 
+  ### Error handling
+
+  function* ...() {
+    try{
+      ...
+    } catch(error) {
+      ...
+    }
+  }
+
+  **Note Desired control flow ដោយគ្រាន់តែ Effects ផ្គុំ និង តំរៀបលំដាប់
+
+  Advance: 
+
+  ### Pulling future action
+
+  - takeEvery: spawn task ថ្មីពេល រាល់ពេល action អីមួយបានកើតឡើង
+
+  ```
+  function* watchAndLog() {
+    yield takeEvery('*', function* logger(action) {
+      const state = yield select()
+
+      console.log('action', action)
+      console.log('state after', state)
+    })
+  }
+  ```
+
+  * takeEvery watcher call ហៅ task ដែល task នោះ
+  មាន argument ជា action ក្នុងករណីនេះ តែផ្នែកមុន dispatch។
+
+  ប្រហែល៖ អត់ទាន់ test គ្រាន់តែមើល doc ហើយស្វែងយល់ឃើញចឹង
+    1. ពេល takeEvery('*', ...) => arg វា ជា action
+    2. តែពេល takeEvery('SPECIFIC', ...) => arg វា ជា dispatch
+
+  ```
+  function* watchAndLog() {
+    while (true) {
+      const action = yield take('*')
+      const state = yield select()
+
+      console.log('action', action)
+      console.log('state after', state)
+    }
+  }
+  ```
+
+  * take() ដូចគ្នាហ្នឹង call() ហើយនិង put() ដែរ វា
+  នឹងប្រាប់ middleware អោយរង់ចាំ action អីមួយ dispatch
+
+  * call() ប្រាប់ middlware អោយ suspend generator រហូត
+  ទាល់តែ Promise resolve ចំនែក 
+  * take() ប្រាប់ middleware អោយ suspend generator រហូត
+  ទាល់តែ action ហ្នឹង ត្រូវបានគេ dispatch
+
+  ````
+  function* watchFirstThreeTodosCreation() {
+    for (let i = 0; i < 3; i++) {
+      const action = yield take('TODO_CREATED')
+    }
+    console.log('Congrats!')
+  }
+  ````
+  មានន័យថា saga ចាំមើល action `TODO_CREATE` dispatch
+  3 ដងប៉ុណ្ណោះ ហើយ វានឹងចេញ message ថា `Congrats!` បន្ទាប់មក 
+  Generator នឹង gabage collected និងលែង
+  observe action នោះតទៅទៀតដែរ។
+
+  term `run-to-complete` 
+  term `pull model`
+
+  ````
+  function* loginFlow() {
+    while (true) {
+      yield take('LOGIN')
+      // ... perform the login logic
+      yield take('LOGOUT')
+      // ... perform the logout logic
+    }
+  }
+  ````
