@@ -221,3 +221,40 @@ const [users, repos] = yield all([
 ])
 ពេលដែលយើង yield array នៃ effects, generator នឹងត្រូវបាន blocked រហូតដល់
 effects ទាំងអស់ resolved រឺក៏មាន មួយណា rejected
+
+### Starting `a race` between multiple effects
+race() Effect: ដំណើរការ tasks លក្ខណៈ parallel
+តែ វាមិននៅចាំ លុត្រាតែ tasks ទាំងអស់ចប់ទេ វាគ្រាន់តែចាំ task ណា
+ដែល resolve រឺក៏ reject មុនគេបង្អស់
+
+````
+function* fetchPostsWithTimeout() {
+  const {posts, timeout} = yield race({
+    posts: call(fetchApi, '/posts'),
+    timeout: call(delay, 1000)
+  })
+
+  if (posts)
+    put({type: 'POSTS_RECEIVED', posts})
+  else
+    put({type: 'TIMEOUT_ERROR'})
+}
+````
+
+ប្រយោជន៏មួយទៀតរបស់ race() គឺវានឹង cancel tasks ដែលចាញ់ទាំងអស់ចោលដោយស្វ័យប្រវត្តិ។
+ឧទាហរណ៏
+
+````
+function* watchStartBackgroundTask() {
+  while (true) {
+    yield take('START_BACKGROUND_TASK')
+    yield race({
+      task: call(backgroundTask),
+      cancel: take('CANCEL_TASK')
+    })
+  }
+}
+````
+ក្នុងករណីដែល action `CANCEL_TASK` ត្រូវបាន dispatch, race() នឹង
+ធ្វើការ cancel task `backgroundTask` ដោយស្វ័យប្រវត្តិ 
+និងបោះ cancellation error នៅក្នុង backgroundTask ផងដែរ
