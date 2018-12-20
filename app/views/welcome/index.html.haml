@@ -208,3 +208,16 @@ function* loginFlow() {
   }
 }
 ````
+
+### Running task in Parallel
+// effects will be executed in sequence
+const users = yield call(fetch, '/users'),
+      repos = yield call(fetch, '/repos')
+
+// effects will get executed in parallel
+const [users, repos] = yield all([
+  call(fetch, '/users'),
+  call(fetch, '/repos')
+])
+ពេលដែលយើង yield array នៃ effects, generator នឹងត្រូវបាន blocked រហូតដល់
+effects ទាំងអស់ resolved រឺក៏មាន មួយណា rejected
