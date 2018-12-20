@@ -1,4 +1,22 @@
 %h1 រ៉េត រ៉ាឌីន ( Reth Radin )
-= image_tag 'radin-reth-trip.jpg'
-%p is it auto-deploy?
-%p Find me in app/views/welcome/index.html.erb
+
+%h2 រៀន redux-saga
+%p
+  ជាទូទៅ ពេលយើង update state តាមរយៈការ dispatch
+  action អ្វីមួយទៅ reducer។ បន្ទាប់មក reducer នឹង check 
+  type របស់ action នោះ ដើម្បីដឹងថា តើយើងចង់ធ្វើអី រឺ ចង់ update store
+  របៀបយ៉ាងម៉េច។
+
+  ឧទាហរណ៏ ចំពោះ real world application យើង request data from
+          ពី remote server តាមរយៈ api. ពេលបាន data ហើយ យើង ប្រើ saga ដើម្បី 
+          dispatch action បន្តទៅអោយ reducer ដើម្បី update store
+
+  នេះ ជា concept របស់ saga.
+  saga ប្រើ generator function.
+  Convention របស់ saga មានពីរគឺ watcher និង worker
+  - Watcher : ចាំមើល action ពេល dispatch
+  - Worker : ពេល Watcher ដឹងថា action នោះ ត្រូវបាន dispatch ហើយ,
+              Watcher នឹង call ហៅ Worker អោយធ្វើការអីមួយដែលយើងចង់បាន 
+              ដូចជា request api ជាដើម
+
+  
