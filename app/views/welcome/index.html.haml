@@ -161,3 +161,50 @@
     }
   }
   ````
+
+### Non-blocking call
+dispatch({ type: 'LOGIN_REQUEST', user: 'radinr', password: 'Q1p2m3g4' })
+
+- task = yield fork(fn) return task
+- yield take(fn, ...) return action
+
+cancel(task) : ដើម្បី abort task ហ្នឹង
+
+try {
+  ...
+} catch(error) {
+  ...
+} finally {
+  if( yield cancelled()) {
+    // ប្រសិនបើ មាន task ណា ត្រូវបានគេ cancel()
+  }
+}
+
+````
+function* authorize(user, password) {
+  try {
+    const token = yield call(Api.authorize, user, password)
+    yield put({type: 'LOGIN_SUCCESS', token})
+    yield call(Api.storeItem, {token})
+    return token
+  } catch(error) {
+    yield put({type: 'LOGIN_ERROR', error})
+  } finally {
+    if (yield cancelled()) {
+      // ... put special cancellation handling code here
+    }
+  }
+}
+
+function* loginFlow() {
+  while (true) {
+    const {user, password} = yield take('LOGIN_REQUEST')
+    // fork return a Task object
+    const task = yield fork(authorize, user, password)
+    const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
+    if (action.type === 'LOGOUT')
+      yield cancel(task)
+    yield call(Api.clearItem, 'token')
+  }
+}
+````
