@@ -60,6 +60,35 @@
   ```
   const content = yield cps(readFile, '/path/to/file')
   ```
-  
 
+យើងអាចបោះ dispatch ទៅអោយ generator function បាន
+```
+function* fetchProducts(dispatch) {
+  const products = yield call(Api.fetch, '/products')
+  dispatch({ type: 'PRODUCTS_RECEIVED', products })
+}
+```
+dipatch ពិបាកពេលត្រូវការ test ព្រោះត្រូវ mock
+ដូចនេះ saga មាន put Effect សំរាប់បញ្ហានេះ
 
+```
+function* fetchProducts() {
+  const products = yield call(Api.fetch, '/products')
+  // create and yield a dispatch Effect
+  yield put({ type: 'PRODUCTS_RECEIVED', products })
+}
+```
+
+### Error handling
+
+function* ...() {
+  try{
+    ...
+  } catch(error) {
+    ...
+  }
+}
+
+**Note Desired control flow ដោយគ្រាន់តែ Effects ផ្គុំ និង តំរៀបលំដាប់
+
+Advance: 
