@@ -1,56 +1,55 @@
 %h1 រ៉េត រ៉ាឌីន ( Reth Radin )
 
 %h2 រៀន redux-saga
-%p
+%div
   ជាទូទៅ ពេលយើង update state តាមរយៈការ dispatch
   action អ្វីមួយទៅ reducer។ បន្ទាប់មក reducer នឹង check 
   type របស់ action នោះ ដើម្បីដឹងថា តើយើងចង់ធ្វើអី រឺ ចង់ update store
   របៀបយ៉ាងម៉េច។
 
   ឧទាហរណ៏ ចំពោះ real world application យើង request data from
-          ពី remote server តាមរយៈ api. ពេលបាន data ហើយ យើង ប្រើ saga ដើម្បី 
-          dispatch action បន្តទៅអោយ reducer ដើម្បី update store
+  ពី remote server តាមរយៈ api. ពេលបាន data ហើយ យើង ប្រើ saga ដើម្បី 
+  dispatch action បន្តទៅអោយ reducer ដើម្បី update store
 
   នេះ ជា concept របស់ saga.
   saga ប្រើ generator function.
   Convention របស់ saga មានពីរគឺ watcher និង worker
-  - Watcher : ចាំមើល action ពេល dispatch
-  - Worker : ពេល Watcher ដឹងថា action នោះ ត្រូវបាន dispatch ហើយ,
-              Watcher នឹង call ហៅ Worker អោយធ្វើការអីមួយដែលយើងចង់បាន 
-              ដូចជា request api ជាដើម
+  Watcher : ចាំមើល action ពេល dispatch
+  Worker : ពេល Watcher ដឹងថា action នោះ ត្រូវបាន dispatch ហើយ,
+  Watcher នឹង call ហៅ Worker អោយធ្វើការអីមួយដែលយើងចង់បាន 
+  ដូចជា request api ជាដើម
 
   + parallel vs. concurrent vs. async. vs. simultaneous
-    - concurrent: 2 queues, 1 coffee machines
-      យើងអាចចាប់ផ្ដើម task ថ្មីមួយទៀត ដោយមិនចាំបាច់រង់ចាំ រឺ task ចាស់មិនទាន់ដំណើរការចប់ក៏ដោយ
+  concurrent: 2 queues, 1 coffee machines
+  យើងអាចចាប់ផ្ដើម task ថ្មីមួយទៀត ដោយមិនចាំបាច់រង់ចាំ រឺ task ចាស់មិនទាន់ដំណើរការចប់ក៏ដោយ
 
-    - parallel: 2 queues , 2 coffee machines
+  parallel: 2 queues , 2 coffee machines
 
-  - fork( process នៅតែភ្ជាប់ទៅនឹង process មេ ) vs. 
-  - spawn( process ត្រូវបានផ្ដាច់ចេញពី process មេ )
+  fork( process នៅតែភ្ជាប់ទៅនឹង process មេ ) vs. 
+  spawn( process ត្រូវបានផ្ដាច់ចេញពី process មេ )
 
   ប្រសិនបើយើងមាន saga watcher ដែល watch action ផ្សេងគ្នាច្រើន 
   យើងអាចបង្កើត multiple watchers ដែលដំណើរការនៅ background
 
   ឧទាហរណ៏៖
   ```
-    // FETCH_USERS
-    function* fetchUsers(action) { ... }
+  // FETCH_USERS
+  function* fetchUsers(action) { ... }
 
-    // CREATE_USER
-    function* createUser(action) { ... }
+  // CREATE_USER
+  function* createUser(action) { ... }
 
-    // use them in parallel
-    export default function* rootSaga() {
-      yield takeEvery('FETCH_USERS', fetchUsers)
-      yield takeEvery('CREATE_USER', createUser)
-    }
+  // use them in parallel
+  export default function* rootSaga() {
+  yield takeEvery('FETCH_USERS', fetchUsers)
+  yield takeEvery('CREATE_USER', createUser)
+  }
   ```
 
-  Effect : គឺជា instruction ដែល middleware ប្រើដើម្បីដឹងថា
-            គួរធ្វើការអីមួយ
+  Effect : គឺជា instruction ដែល middleware ប្រើដើម្បីដឹងថាគួរធ្វើការអីមួយ
 
   Saga អាច yield Effect បានច្រើនទម្រង់, តែទម្រង់ដែលយើង
-        ឃើញញឹកញាប់ជាងគេ គឺ yield a Promise.
+  ឃើញញឹកញាប់ជាងគេ គឺ yield a Promise.
 
   call(fn, ...args) 
   alias `apply()` សាកសមសំរាប់ function ដែល return លទ្ធផលជា promise
@@ -64,8 +63,8 @@
   យើងអាចបោះ dispatch ទៅអោយ generator function បាន
   ```
   function* fetchProducts(dispatch) {
-    const products = yield call(Api.fetch, '/products')
-    dispatch({ type: 'PRODUCTS_RECEIVED', products })
+  const products = yield call(Api.fetch, '/products')
+  dispatch({ type: 'PRODUCTS_RECEIVED', products })
   }
   ```
   dipatch ពិបាកពេលត្រូវការ test ព្រោះត្រូវ mock
@@ -73,38 +72,36 @@
 
   ```
   function* fetchProducts() {
-    const products = yield call(Api.fetch, '/products')
-    // create and yield a dispatch Effect
-    yield put({ type: 'PRODUCTS_RECEIVED', products })
+  const products = yield call(Api.fetch, '/products')
+  // create and yield a dispatch Effect
+  yield put({ type: 'PRODUCTS_RECEIVED', products })
   }
   ```
 
-  ### Error handling
+  Error handling
 
   function* ...() {
-    try{
-      ...
-    } catch(error) {
-      ...
-    }
+  try{
+  } catch(error) {
+  }
   }
 
   **Note Desired control flow ដោយគ្រាន់តែ Effects ផ្គុំ និង តំរៀបលំដាប់
 
   Advance: 
 
-  ### Pulling future action
+  Pulling future action
 
-  - takeEvery: spawn task ថ្មីពេល រាល់ពេល action អីមួយបានកើតឡើង
+  takeEvery: spawn task ថ្មីពេល រាល់ពេល action អីមួយបានកើតឡើង
 
   ```
   function* watchAndLog() {
-    yield takeEvery('*', function* logger(action) {
-      const state = yield select()
+  yield takeEvery('*', function* logger(action) {
+  const state = yield select()
 
-      console.log('action', action)
-      console.log('state after', state)
-    })
+  console.log('action', action)
+  console.log('state after', state)
+  })
   }
   ```
 
@@ -112,18 +109,18 @@
   មាន argument ជា action ក្នុងករណីនេះ តែផ្នែកមុន dispatch។
 
   ប្រហែល៖ អត់ទាន់ test គ្រាន់តែមើល doc ហើយស្វែងយល់ឃើញចឹង
-    1. ពេល takeEvery('*', ...) => arg វា ជា action
-    2. តែពេល takeEvery('SPECIFIC', ...) => arg វា ជា dispatch
+  1. ពេល takeEvery('*', ...) => arg វា ជា action
+  2. តែពេល takeEvery('SPECIFIC', ...) => arg វា ជា dispatch
 
   ```
   function* watchAndLog() {
-    while (true) {
-      const action = yield take('*')
-      const state = yield select()
+  while (true) {
+  const action = yield take('*')
+  const state = yield select()
 
-      console.log('action', action)
-      console.log('state after', state)
-    }
+  console.log('action', action)
+  console.log('state after', state)
+  }
   }
   ```
 
@@ -137,10 +134,10 @@
 
   ````
   function* watchFirstThreeTodosCreation() {
-    for (let i = 0; i < 3; i++) {
-      const action = yield take('TODO_CREATED')
-    }
-    console.log('Congrats!')
+  for (let i = 0; i < 3; i++) {
+  const action = yield take('TODO_CREATED')
+  }
+  console.log('Congrats!')
   }
   ````
   មានន័យថា saga ចាំមើល action `TODO_CREATE` dispatch
@@ -153,89 +150,87 @@
 
   ````
   function* loginFlow() {
-    while (true) {
-      yield take('LOGIN')
-      // ... perform the login logic
-      yield take('LOGOUT')
-      // ... perform the logout logic
-    }
+  while (true) {
+  yield take('LOGIN')
+  // ... perform the login logic
+  yield take('LOGOUT')
+  // ... perform the logout logic
+  }
   }
 
 %div
-  ### Non-blocking call
+  Non-blocking call
   dispatch({ type: 'LOGIN_REQUEST', user: 'radinr', password: 'Q1p2m3g4' })
 
-  - task = yield fork(fn) return task
-  - yield take(fn, ...) return action
+  task = yield fork(fn) return task
+  yield take(fn, ...) return action
 
   cancel(task) : ដើម្បី abort task ហ្នឹង
 
   try {
-    ...
   } catch(error) {
-    ...
   } finally {
-    if( yield cancelled()) {
-      // ប្រសិនបើ មាន task ណា ត្រូវបានគេ cancel()
-    }
+  if( yield cancelled()) {
+  // ប្រសិនបើ មាន task ណា ត្រូវបានគេ cancel()
+  }
   }
 
   function* authorize(user, password) {
-    try {
-      const token = yield call(Api.authorize, user, password)
-      yield put({type: 'LOGIN_SUCCESS', token})
-      yield call(Api.storeItem, {token})
-      return token
-    } catch(error) {
-      yield put({type: 'LOGIN_ERROR', error})
-    } finally {
-      if (yield cancelled()) {
-        // ... put special cancellation handling code here
-      }
-    }
+  try {
+  const token = yield call(Api.authorize, user, password)
+  yield put({type: 'LOGIN_SUCCESS', token})
+  yield call(Api.storeItem, {token})
+  return token
+  } catch(error) {
+  yield put({type: 'LOGIN_ERROR', error})
+  } finally {
+  if (yield cancelled()) {
+  // ... put special cancellation handling code here
+  }
+  }
   }
 
   function* loginFlow() {
-    while (true) {
-      const {user, password} = yield take('LOGIN_REQUEST')
-      // fork return a Task object
-      const task = yield fork(authorize, user, password)
-      const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
-      if (action.type === 'LOGOUT')
-        yield cancel(task)
-      yield call(Api.clearItem, 'token')
-    }
+  while (true) {
+  const {user, password} = yield take('LOGIN_REQUEST')
+  // fork return a Task object
+  const task = yield fork(authorize, user, password)
+  const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
+  if (action.type === 'LOGOUT')
+  yield cancel(task)
+  yield call(Api.clearItem, 'token')
+  }
   }
 
-  ### Running task in Parallel
+  Running task in Parallel
   // effects will be executed in sequence
   const users = yield call(fetch, '/users'),
-        repos = yield call(fetch, '/repos')
+  repos = yield call(fetch, '/repos')
 
   // effects will get executed in parallel
   const [users, repos] = yield all([
-    call(fetch, '/users'),
-    call(fetch, '/repos')
+  call(fetch, '/users'),
+  call(fetch, '/repos')
   ])
   ពេលដែលយើង yield array នៃ effects, generator នឹងត្រូវបាន blocked រហូតដល់
   effects ទាំងអស់ resolved រឺក៏មាន មួយណា rejected
 
-  ### Starting `a race` between multiple effects
+  Starting `a race` between multiple effects
   race() Effect: ដំណើរការ tasks លក្ខណៈ parallel
   តែ វាមិននៅចាំ លុត្រាតែ tasks ទាំងអស់ចប់ទេ វាគ្រាន់តែចាំ task ណា
   ដែល resolve រឺក៏ reject មុនគេបង្អស់
 
   ````
   function* fetchPostsWithTimeout() {
-    const {posts, timeout} = yield race({
-      posts: call(fetchApi, '/posts'),
-      timeout: call(delay, 1000)
-    })
+  const {posts, timeout} = yield race({
+  posts: call(fetchApi, '/posts'),
+  timeout: call(delay, 1000)
+  })
 
-    if (posts)
-      put({type: 'POSTS_RECEIVED', posts})
-    else
-      put({type: 'TIMEOUT_ERROR'})
+  if (posts)
+  put({type: 'POSTS_RECEIVED', posts})
+  else
+  put({type: 'TIMEOUT_ERROR'})
   }
   ````
 
@@ -244,20 +239,20 @@
 
   ````
   function* watchStartBackgroundTask() {
-    while (true) {
-      yield take('START_BACKGROUND_TASK')
-      yield race({
-        task: call(backgroundTask),
-        cancel: take('CANCEL_TASK')
-      })
-    }
+  while (true) {
+  yield take('START_BACKGROUND_TASK')
+  yield race({
+  task: call(backgroundTask),
+  cancel: take('CANCEL_TASK')
+  })
+  }
   }
   ````
   ក្នុងករណីដែល action `CANCEL_TASK` ត្រូវបាន dispatch, race() នឹង
   ធ្វើការ cancel task `backgroundTask` ដោយស្វ័យប្រវត្តិ 
   និងបោះ cancellation error នៅក្នុង backgroundTask ផងដែរ
 
-  ### Sequencing sagas using `yield*`
+  Sequencing sagas using `yield*`
   maybe it's a bit simple concept to implement
 
-  ### Composing sagas
+  Composing sagas
