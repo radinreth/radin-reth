@@ -160,101 +160,104 @@
       // ... perform the logout logic
     }
   }
-  ````
 
-### Non-blocking call
-dispatch({ type: 'LOGIN_REQUEST', user: 'radinr', password: 'Q1p2m3g4' })
+%div
+  ### Non-blocking call
+  dispatch({ type: 'LOGIN_REQUEST', user: 'radinr', password: 'Q1p2m3g4' })
 
-- task = yield fork(fn) return task
-- yield take(fn, ...) return action
+  - task = yield fork(fn) return task
+  - yield take(fn, ...) return action
 
-cancel(task) : ដើម្បី abort task ហ្នឹង
+  cancel(task) : ដើម្បី abort task ហ្នឹង
 
-try {
-  ...
-} catch(error) {
-  ...
-} finally {
-  if( yield cancelled()) {
-    // ប្រសិនបើ មាន task ណា ត្រូវបានគេ cancel()
-  }
-}
-
-````
-function* authorize(user, password) {
   try {
-    const token = yield call(Api.authorize, user, password)
-    yield put({type: 'LOGIN_SUCCESS', token})
-    yield call(Api.storeItem, {token})
-    return token
+    ...
   } catch(error) {
-    yield put({type: 'LOGIN_ERROR', error})
+    ...
   } finally {
-    if (yield cancelled()) {
-      // ... put special cancellation handling code here
+    if( yield cancelled()) {
+      // ប្រសិនបើ មាន task ណា ត្រូវបានគេ cancel()
     }
   }
-}
 
-function* loginFlow() {
-  while (true) {
-    const {user, password} = yield take('LOGIN_REQUEST')
-    // fork return a Task object
-    const task = yield fork(authorize, user, password)
-    const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
-    if (action.type === 'LOGOUT')
-      yield cancel(task)
-    yield call(Api.clearItem, 'token')
+  function* authorize(user, password) {
+    try {
+      const token = yield call(Api.authorize, user, password)
+      yield put({type: 'LOGIN_SUCCESS', token})
+      yield call(Api.storeItem, {token})
+      return token
+    } catch(error) {
+      yield put({type: 'LOGIN_ERROR', error})
+    } finally {
+      if (yield cancelled()) {
+        // ... put special cancellation handling code here
+      }
+    }
   }
-}
-````
 
-### Running task in Parallel
-// effects will be executed in sequence
-const users = yield call(fetch, '/users'),
-      repos = yield call(fetch, '/repos')
+  function* loginFlow() {
+    while (true) {
+      const {user, password} = yield take('LOGIN_REQUEST')
+      // fork return a Task object
+      const task = yield fork(authorize, user, password)
+      const action = yield take(['LOGOUT', 'LOGIN_ERROR'])
+      if (action.type === 'LOGOUT')
+        yield cancel(task)
+      yield call(Api.clearItem, 'token')
+    }
+  }
 
-// effects will get executed in parallel
-const [users, repos] = yield all([
-  call(fetch, '/users'),
-  call(fetch, '/repos')
-])
-ពេលដែលយើង yield array នៃ effects, generator នឹងត្រូវបាន blocked រហូតដល់
-effects ទាំងអស់ resolved រឺក៏មាន មួយណា rejected
+  ### Running task in Parallel
+  // effects will be executed in sequence
+  const users = yield call(fetch, '/users'),
+        repos = yield call(fetch, '/repos')
 
-### Starting `a race` between multiple effects
-race() Effect: ដំណើរការ tasks លក្ខណៈ parallel
-តែ វាមិននៅចាំ លុត្រាតែ tasks ទាំងអស់ចប់ទេ វាគ្រាន់តែចាំ task ណា
-ដែល resolve រឺក៏ reject មុនគេបង្អស់
+  // effects will get executed in parallel
+  const [users, repos] = yield all([
+    call(fetch, '/users'),
+    call(fetch, '/repos')
+  ])
+  ពេលដែលយើង yield array នៃ effects, generator នឹងត្រូវបាន blocked រហូតដល់
+  effects ទាំងអស់ resolved រឺក៏មាន មួយណា rejected
 
-````
-function* fetchPostsWithTimeout() {
-  const {posts, timeout} = yield race({
-    posts: call(fetchApi, '/posts'),
-    timeout: call(delay, 1000)
-  })
+  ### Starting `a race` between multiple effects
+  race() Effect: ដំណើរការ tasks លក្ខណៈ parallel
+  តែ វាមិននៅចាំ លុត្រាតែ tasks ទាំងអស់ចប់ទេ វាគ្រាន់តែចាំ task ណា
+  ដែល resolve រឺក៏ reject មុនគេបង្អស់
 
-  if (posts)
-    put({type: 'POSTS_RECEIVED', posts})
-  else
-    put({type: 'TIMEOUT_ERROR'})
-}
-````
-
-ប្រយោជន៏មួយទៀតរបស់ race() គឺវានឹង cancel tasks ដែលចាញ់ទាំងអស់ចោលដោយស្វ័យប្រវត្តិ។
-ឧទាហរណ៏
-
-````
-function* watchStartBackgroundTask() {
-  while (true) {
-    yield take('START_BACKGROUND_TASK')
-    yield race({
-      task: call(backgroundTask),
-      cancel: take('CANCEL_TASK')
+  ````
+  function* fetchPostsWithTimeout() {
+    const {posts, timeout} = yield race({
+      posts: call(fetchApi, '/posts'),
+      timeout: call(delay, 1000)
     })
+
+    if (posts)
+      put({type: 'POSTS_RECEIVED', posts})
+    else
+      put({type: 'TIMEOUT_ERROR'})
   }
-}
-````
-ក្នុងករណីដែល action `CANCEL_TASK` ត្រូវបាន dispatch, race() នឹង
-ធ្វើការ cancel task `backgroundTask` ដោយស្វ័យប្រវត្តិ 
-និងបោះ cancellation error នៅក្នុង backgroundTask ផងដែរ
+  ````
+
+  ប្រយោជន៏មួយទៀតរបស់ race() គឺវានឹង cancel tasks ដែលចាញ់ទាំងអស់ចោលដោយស្វ័យប្រវត្តិ។
+  ឧទាហរណ៏
+
+  ````
+  function* watchStartBackgroundTask() {
+    while (true) {
+      yield take('START_BACKGROUND_TASK')
+      yield race({
+        task: call(backgroundTask),
+        cancel: take('CANCEL_TASK')
+      })
+    }
+  }
+  ````
+  ក្នុងករណីដែល action `CANCEL_TASK` ត្រូវបាន dispatch, race() នឹង
+  ធ្វើការ cancel task `backgroundTask` ដោយស្វ័យប្រវត្តិ 
+  និងបោះ cancellation error នៅក្នុង backgroundTask ផងដែរ
+
+  ### Sequencing sagas using `yield*`
+  maybe it's a bit simple concept to implement
+
+  ### Composing sagas
